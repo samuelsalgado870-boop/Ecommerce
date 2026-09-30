@@ -27,7 +27,7 @@ class UsuarioController extends Controller
         )->get();
 
         return response()->json([
-            'usuarios' => $usuarios
+            'usuarios' => $usuarios,
         ], 200);
     }
 
@@ -48,14 +48,14 @@ class UsuarioController extends Controller
             'fecha_creacion'
         )->find($id);
 
-        if (!$usuario) {
+        if (! $usuario) {
             return response()->json([
-                'message' => 'Usuario no encontrado'
+                'message' => 'Usuario no encontrado',
             ], 404);
         }
 
         return response()->json([
-            'usuario' => $usuario
+            'usuario' => $usuario,
         ], 200);
     }
 
@@ -88,98 +88,96 @@ class UsuarioController extends Controller
                 'nombre' => $usuario->nombre,
                 'email' => $usuario->email,
                 'activo' => $usuario->activo,
-            ]
+            ],
         ], 201);
     }
 
+    /**
+     * Actualizar un usuario.
+     */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $usuario = User::find($id);
 
-/**
- * Actualizar un usuario.
- */
-public function update(Request $request, int $id): JsonResponse
-{
-    $usuario = User::find($id);
+        if (! $usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+        }
 
-    if (!$usuario) {
+        $datos = $request->validate([
+            'id_rol' => ['sometimes', 'integer'],
+            'nombre' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'unique:usuarios,email,'.$id.',id_usuario'],
+            'password' => ['sometimes', 'string', 'min:8'],
+            'activo' => ['sometimes', 'boolean'],
+        ]);
+
+        if (isset($datos['id_rol'])) {
+
+            $rolUsuario = (int) $request->user()->id_rol;
+
+            if (! in_array($rolUsuario, [3, 4], true)) {
+                return response()->json([
+                    'message' => 'No tienes permisos para cambiar roles.',
+                ], 403);
+            }
+
+            $usuario->id_rol = $datos['id_rol'];
+        }
+
+        if (isset($datos['nombre'])) {
+            $usuario->nombre = $datos['nombre'];
+        }
+
+        if (isset($datos['email'])) {
+            $usuario->email = $datos['email'];
+        }
+
+        if (isset($datos['password'])) {
+            $usuario->password_hash = Hash::make($datos['password']);
+        }
+
+        if (isset($datos['activo'])) {
+            $usuario->activo = $datos['activo'];
+        }
+
+        $usuario->save();
+
         return response()->json([
-            'message' => 'Usuario no encontrado'
-        ], 404);
+            'message' => 'Usuario actualizado correctamente',
+            'usuario' => [
+                'id_usuario' => $usuario->id_usuario,
+                'id_rol' => $usuario->id_rol,
+                'nombre' => $usuario->nombre,
+                'email' => $usuario->email,
+                'activo' => $usuario->activo,
+            ],
+        ], 200);
     }
 
-    $datos = $request->validate([
-        'id_rol' => ['sometimes', 'integer'],
-        'nombre' => ['sometimes', 'string', 'max:255'],
-        'email' => ['sometimes', 'email', 'unique:usuarios,email,' . $id . ',id_usuario'],
-        'password' => ['sometimes', 'string', 'min:8'],
-        'activo' => ['sometimes', 'boolean'],
-    ]);
+    public function destroy(int $id): JsonResponse
+    {
+        $usuario = User::find($id);
 
-   if (isset($datos['id_rol'])) {
+        if (! $usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+            if (
+                $request->user()->id_usuario !== $usuario->id_usuario &&
+                ! in_array((int) $request->user()->id_rol, [3, 4], true)
+            ) {
+                return response()->json([
+                    'message' => 'No tienes permisos para modificar este usuario.',
+                ], 403);
+            }
+        }
 
-    $rolUsuario = (int) $request->user()->id_rol;
+        $usuario->delete();
 
-    if (!in_array($rolUsuario, [3, 4], true)) {
         return response()->json([
-            'message' => 'No tienes permisos para cambiar roles.'
-        ], 403);
+            'message' => 'Usuario eliminado correctamente',
+        ], 200);
     }
-
-    $usuario->id_rol = $datos['id_rol'];
-}
-
-    if (isset($datos['nombre'])) {
-        $usuario->nombre = $datos['nombre'];
-    }
-
-    if (isset($datos['email'])) {
-        $usuario->email = $datos['email'];
-    }
-
-    if (isset($datos['password'])) {
-        $usuario->password_hash = Hash::make($datos['password']);
-    }
-
-    if (isset($datos['activo'])) {
-        $usuario->activo = $datos['activo'];
-    }
-
-    $usuario->save();
-
-    return response()->json([
-        'message' => 'Usuario actualizado correctamente',
-        'usuario' => [
-            'id_usuario' => $usuario->id_usuario,
-            'id_rol' => $usuario->id_rol,
-            'nombre' => $usuario->nombre,
-            'email' => $usuario->email,
-            'activo' => $usuario->activo,
-        ]
-    ], 200);
-}
-public function destroy(int $id): JsonResponse
-{
-    $usuario = User::find($id);
- 
-    if (!$usuario) {
-        return response()->json([
-            'message' => 'Usuario no encontrado'
-        ], 404);
-
-    if (
-    $request->user()->id_usuario !== $usuario->id_usuario &&
-    !in_array((int) $request->user()->id_rol, [3, 4], true)
-) {
-    return response()->json([   
-        'message' => 'No tienes permisos para modificar este usuario.'
-    ], 403);
-}
-    }
-
-    $usuario->delete();
-
-    return response()->json([
-        'message' => 'Usuario eliminado correctamente'
-    ], 200);
-}
-
 }
