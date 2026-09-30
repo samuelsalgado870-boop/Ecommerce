@@ -12,7 +12,8 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('permisos')->upsert([
+        DB::table('permisos')->insertOrIgnore([
+            ['codigo' => 'usuarios.assign_superadmin', 'modulo' => 'usuarios', 'accion' => 'assign_superadmin', 'nombre' => 'Delegar superadministración', 'descripcion' => 'Reservado al superadministrador para delegación explícita.', 'activo' => true],
             ['codigo' => 'usuarios.read', 'modulo' => 'usuarios', 'accion' => 'read', 'nombre' => 'Consultar usuarios', 'descripcion' => 'Consultar perfiles no sensibles.', 'activo' => true],
             ['codigo' => 'usuarios.create', 'modulo' => 'usuarios', 'accion' => 'create', 'nombre' => 'Crear usuarios', 'descripcion' => 'Crear cuentas.', 'activo' => true],
             ['codigo' => 'usuarios.update', 'modulo' => 'usuarios', 'accion' => 'update', 'nombre' => 'Actualizar usuarios', 'descripcion' => 'Actualizar datos permitidos.', 'activo' => true],
@@ -39,6 +40,6 @@ class PermissionSeeder extends Seeder
             ['codigo' => 'reportes.read', 'modulo' => 'reportes', 'accion' => 'read', 'nombre' => 'Consultar reportes', 'descripcion' => 'Consultar reportes.', 'activo' => true],
             ['codigo' => 'auditoria.read', 'modulo' => 'auditoria', 'accion' => 'read', 'nombre' => 'Consultar auditoria', 'descripcion' => 'Consultar eventos.', 'activo' => true],
             ['codigo' => 'auditoria.export', 'modulo' => 'auditoria', 'accion' => 'export', 'nombre' => 'Exportar auditoria', 'descripcion' => 'Exportar evidencia.', 'activo' => true],
-        ], ['codigo'], ['modulo', 'accion', 'nombre', 'descripcion', 'activo']);
+        ]);
     }
 }

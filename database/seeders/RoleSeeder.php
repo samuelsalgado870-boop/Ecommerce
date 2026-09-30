@@ -12,7 +12,7 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('roles')->upsert([
+        DB::table('roles')->insertOrIgnore([
             ['nombre' => 'CLIENTE', 'descripcion' => 'Compra y consulta sus propios pedidos.', 'codigo' => 'cliente', 'es_sistema' => true, 'activo' => true],
             ['nombre' => 'Superadministrador', 'descripcion' => 'Control total operativo y de seguridad.', 'codigo' => 'superadministrador', 'es_sistema' => true, 'activo' => true],
             ['nombre' => 'Administrador', 'descripcion' => 'Administra la operacion general.', 'codigo' => 'administrador', 'es_sistema' => true, 'activo' => true],
@@ -25,6 +25,6 @@ class RoleSeeder extends Seeder
             ['nombre' => 'Logistica', 'descripcion' => 'Gestiona envios.', 'codigo' => 'logistica', 'es_sistema' => true, 'activo' => true],
             ['nombre' => 'Auditor', 'descripcion' => 'Consulta informacion y auditoria.', 'codigo' => 'auditor', 'es_sistema' => true, 'activo' => true],
             ['nombre' => 'Analista', 'descripcion' => 'Consulta reportes operativos.', 'codigo' => 'analista', 'es_sistema' => true, 'activo' => true],
-        ], ['codigo'], ['nombre', 'descripcion', 'es_sistema', 'activo']);
+        ]);
     }
 }
